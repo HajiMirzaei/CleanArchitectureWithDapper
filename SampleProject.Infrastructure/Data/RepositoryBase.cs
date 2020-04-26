@@ -13,12 +13,11 @@ namespace SampleProject.Infrastructure.Data
     public abstract class RepositoryBase<T> : IAsyncGenericRepository<T> where T : EntityBase
     {
         private readonly string _tableName;
-        protected IDbConnection _connection;
+        protected string _connectionString;
 
         public RepositoryBase(IConfiguration configuration)
         {
-            _connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
-            _connection.Open();
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
             _tableName = typeof(T).Name;
         }
 
@@ -28,23 +27,39 @@ namespace SampleProject.Infrastructure.Data
             var stringOfColumns = string.Join(", ", columns);
             var stringOfParameters = string.Join(", ", columns.Select(e => "@" + e));
             var query = $"insert into {_tableName} ({stringOfColumns}) values ({stringOfParameters})";
-
-            var result = await _connection.ExecuteAsync(query, entity);
-            return result;
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                var result = await conn.ExecuteAsync(query, entity);
+                return result;
+            }
         }
         public async Task DeleteAsync(int id)
         {
-            await _connection.ExecuteAsync($"DELETE FROM {_tableName} WHERE [Id] = @Id", new { Id = id });
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                await conn.ExecuteAsync($"DELETE FROM {_tableName} WHERE [Id] = @Id", new { Id = id });
+            }
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            var data = await _connection.QueryAsync<T>($"SELECT * FROM {_tableName}");
-            return data;
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                var data = await conn.QueryAsync<T>($"SELECT * FROM {_tableName}");
+                return data;
+            }
         }
         public async Task<T> GetByIdAsync(int id)
         {
-            var data = await _connection.QueryAsync<T>($"SELECT * FROM {_tableName} WHERE Id = @Id", new { Id = id });
-            return data.FirstOrDefault();
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                var data = await conn.QueryAsync<T>($"SELECT * FROM {_tableName} WHERE Id = @Id", new { Id = id });
+                return data.FirstOrDefault();
+            }
+            
         }
         public async Task UpdateAsync(T entity)
         {
@@ -52,7 +67,11 @@ namespace SampleProject.Infrastructure.Data
             var stringOfColumns = string.Join(", ", columns.Select(e => $"{e} = @{e}"));
             var query = $"update {_tableName} set {stringOfColumns} where Id = @Id";
 
-            await _connection.ExecuteAsync(query, entity);
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                await conn.ExecuteAsync(query, entity);
+            }
         }
         public async Task<IEnumerable<T>> Query(string where = null)
         {
@@ -61,8 +80,12 @@ namespace SampleProject.Infrastructure.Data
             if (!string.IsNullOrWhiteSpace(where))
                 query += where;
 
-            var data = await _connection.QueryAsync<T>(query);
-            return data;
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                var data = await conn.QueryAsync<T>(query);
+                return data;
+            }
         }
         private IEnumerable<string> GetColumns()
         {

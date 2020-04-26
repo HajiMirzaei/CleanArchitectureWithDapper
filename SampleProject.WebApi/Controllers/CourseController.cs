@@ -7,16 +7,16 @@ namespace SampleProject.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController : ControllerBase
+    public class CourseController : ControllerBase
     {
         protected readonly ICourseService _courseService;
-        public StudentController(ICourseService courseService)
+        public CourseController(ICourseService courseService)
         {
             _courseService = courseService;
         }
 
         [HttpPost("[action]")]
-        public async Task<RegisterCourseOutput> Index(RegisterCourseInput args)
+        public async Task<RegisterCourseOutput> RegisterCourse(RegisterCourseInput args)
         {
             var result = await _courseService.RegisterCourse(args);
             return result;

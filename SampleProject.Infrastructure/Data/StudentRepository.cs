@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using SampleProject.Core.Contracts;
 using SampleProject.Core.Entities;
 using System.Linq;
+using System.Data.SqlClient;
 
 namespace SampleProject.Infrastructure.Data
 {
@@ -16,13 +17,16 @@ namespace SampleProject.Infrastructure.Data
 
         public async Task<Student> GetStudentWithRegisteredCourses(int studentId)
         {
-            var result = await _connection.QueryMultipleAsync("GetStudentWithRegisteredCourses", new { StudentId = studentId },
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                var result = await conn.QueryMultipleAsync("GetStudentWithRegisteredCourses", new { StudentId = studentId },
                 commandType: CommandType.StoredProcedure);
 
-            var student = result.Read<Student>().FirstOrDefault();
-            student.RegisteredCourses = result.Read<RegisteredCourse>().ToList();
+                var student = result.Read<Student>().FirstOrDefault();
+                student.RegisteredCourses = result.Read<RegisteredCourse>().ToList();
 
-            return student;
+                return student;
+            }
         }
     }
 }

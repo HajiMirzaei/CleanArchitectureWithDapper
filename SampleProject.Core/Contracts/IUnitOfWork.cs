@@ -2,7 +2,7 @@
 
 namespace SampleProject.Core.Contracts
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
         IStudentRepository StudentRepository { get; }
         ICourseRepository CourseRepository { get; }

@@ -34,7 +34,7 @@ namespace SampleProject.Core.UseCases
                         StudentId = arg.StudentId,
                         CourseId = course.Id
                     };
-                    _uow.RegisteredCourseRepository.AddAsync(registerCourse);
+                    await _uow.RegisteredCourseRepository.AddAsync(registerCourse);
                 }
             }
 

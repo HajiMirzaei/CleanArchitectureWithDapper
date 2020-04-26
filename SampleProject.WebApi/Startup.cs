@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SampleProject.Core.IoC;
 using SampleProject.Infrastructure.IoC;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace SampleProject.WebApi
 {
@@ -24,6 +26,8 @@ namespace SampleProject.WebApi
 
             services.AddSingleton(Configuration);
 
+            //services.AddTransient<IDbConnection>(db => new SqlConnection(
+            //        Configuration.GetConnectionString("DefaultConnection")));
             services.RegisterCoreServices();
             services.RegisterInfrastructureServices();
         }
